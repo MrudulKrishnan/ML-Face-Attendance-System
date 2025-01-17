@@ -1,0 +1,42 @@
+{% extends 'admin_index.html' %}
+{% block body %}
+
+<form id="form1" name="form1" method="post" action="{% url 'rating_search' %}#about">
+  <table width="200" border="1" class="table table-dark table-hover">
+    <tr>
+      <td colspan="4"><div align="center">TYPE 
+          <select name="select">
+              <option>college</option>
+              <option>staff</option>
+          </select>
+           <input type="submit" name="Submit" value="search" />
+      </div></td>
+    </tr>
+    <tr>
+      <td>SI NO. </td>
+      <td>NAME</td>
+      <td>RATING</td>
+      <td>DATE</td>
+    </tr>
+      {% for i in rating_obj %}
+    <tr>
+      <td>&nbsp;{{ i.id }}</td>
+      <td>&nbsp;{{ i.LOGIN.Username }}</td>
+      <td>&nbsp;
+        {% with stars=i.rating %}
+          {% for star in star_range %}
+            {% if star < stars %}
+              &#9733;  <!-- Full Star -->
+            {% else %}
+              &#9734;  <!-- Empty Star -->
+            {% endif %}
+          {% endfor %}
+        {% endwith %}
+      </td>
+      <td>&nbsp;{{ i.date }}</td>
+    </tr>
+      {% endfor %}
+  </table>
+</form>
+
+{% endblock %}

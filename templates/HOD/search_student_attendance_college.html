@@ -1,0 +1,43 @@
+{#<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">#}
+{#<html xmlns="http://www.w3.org/1999/xhtml">#}
+{#<head>#}
+{#<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />#}
+{#<title>Untitled Document</title>#}
+{#</head>#}
+{##}
+{#<body>#}
+{% extends 'college_index.html' %}
+{% block body %}
+
+<form id="form1" name="form1" method="post" action="{% url 'view_attendance_college_action' %}#about">
+  <table width="200" border="1" class="table table-dark table-hover">
+    <tr>
+      <td>Student<td>
+        <td>
+        <select name="student">
+            {% for i in student_obj %}
+            <option>{{ i.first_name }}</option>
+            {% endfor %}
+        </select>
+        </td>
+    </td>
+        <td>Department</td>
+    <td>
+        <select name="department">
+            {% for i in department_obj %}
+            <option value="{{ i.id }}">{{ i.department }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    </tr>
+  <tr>
+      <td colspan="6" align="center">
+      <input type="submit" name="Submit" value="Search" />
+      </td>
+  </tr>
+
+  </table>
+</form>
+{#</body>#}
+{#</html>#}
+{% endblock %}

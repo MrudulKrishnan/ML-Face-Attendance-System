@@ -1,0 +1,71 @@
+{#<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">#}
+{#<html xmlns="http://www.w3.org/1999/xhtml">#}
+{#<head>#}
+{#<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />#}
+{#<title>Untitled Document</title>#}
+{#</head>#}
+{##}
+{#<body>#}
+{% extends 'admin_index.html' %}
+{% block body %}
+
+<form id="form1" name="form1" method="post" action="/update_student_action">
+  <table width="200" border="1" class="table table-dark table-hover">
+      <tr>
+      <td>ADMISSION NO.</td>
+      <td><input type="text" name="admission" value="{{ student_obj.AdmissionNo }}"  required/></td>
+    </tr>
+      <tr>
+      <td>FIRST NAME</td>
+      <td><input type="text" name="textfield" value="{{ student_obj.first_name }}"  required pattern="[A-Z a-z.]{3,25}"/></td>
+    </tr>
+      <tr>
+      <td>LAST NAME</td>
+      <td><input type="text" name="textfield10" value="{{ student_obj.last_name }}"  required pattern="[A-Z a-z.]{3,25}"/></td>
+    </tr>
+    <tr>
+      <td>PLACE</td>
+      <td><input type="text" name="place" value="{{ student_obj.place }}"  required pattern="[A-Z a-z.]{3,25}"/></td>
+    </tr>
+    <tr>
+      <td>POST</td>
+      <td><input type="text" name="textfield3" value="{{ student_obj.post }}"  required pattern="[A-Z a-z.]{3,25}"/></td>
+    </tr>
+    <tr>
+      <td>PIN</td>
+      <td><input type="text" name="textfield2" value="{{ student_obj.pin }}"  required pattern="[0-9]{6}"/></td>
+    </tr>
+    <tr>
+      <td>PHOTO</td>
+      <td>
+        <img src="{{ student_obj.photo.url }}" width="100" height="60"><br>
+        <input type="file" name="photo" value="{{ student_obj.pin }}"/>
+      </td>
+    </tr>
+    <tr>
+      <td>PHONE</td>
+      <td><input type="text" name="textfield4" value="{{ student_obj.phone }}" required pattern="[6789][0-9]{9}"/></td>
+    </tr>
+    <tr>
+      <td>EMAIL</td>
+      <td><input type="text" name="textfield5" value="{{ student_obj.email }}" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}"/></td>
+    </tr>
+    <tr>
+      <td>DEPARTMENT</td>
+      <td><select name="select">
+           {% for i in val %}
+{#               <option value="{{ i.id }}">{{ i.department }}</option>#}
+            <option value="{{ i.id }}">{{ i.department }}</option>
+        {% endfor %}
+      </select></td>
+    </tr>
+    <tr>
+      <td colspan="2"><div align="center">
+        <input type="submit" name="Submit" value="Update" />
+      </div></td>
+    </tr>
+  </table>
+</form>
+{#</body>#}
+{#</html>#}
+{% endblock %}

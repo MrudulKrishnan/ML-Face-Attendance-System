@@ -1,0 +1,21 @@
+{% extends 'staff_index.html' %}
+{% block body %}
+
+<form id="form1" name="form1" method="post">
+  <table class="table table-dark table-hover">
+    <tr>
+      <th>SUBJECTS</th>
+      <td></td>
+     
+    </tr>
+      {% for i in obj %}
+    <tr>
+      <td>&nbsp;{{ i.SUBJECT.Subject }}</td>
+     <td>
+    </tr>
+      {% endfor %}
+  </table>
+</form>
+{#</body>#}
+{#</html>#}
+{% endblock %}

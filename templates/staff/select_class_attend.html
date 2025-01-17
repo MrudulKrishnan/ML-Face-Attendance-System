@@ -1,0 +1,26 @@
+{% extends 'hod_index.html' %}
+{% block body %}
+<form id="form1" name="form1" method="post" action="{% url 'hod_view_attendace' %}">
+  {% csrf_token %}
+  <table width="200" border="1" class="table table-dark table-hover">
+    <tr>
+      <th>CLASS</th>
+      <td>
+        <select name="class_id" style="width: 200px;">
+          {% for i in obj %}
+          <option value="{{ i.id }}">{{ i.ClassName }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td>
+        <input type="date" name="date" required>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" align="center">
+        <input type="submit" value="Enter">
+      </td>
+    </tr>
+  </table>
+</form>
+{% endblock %}

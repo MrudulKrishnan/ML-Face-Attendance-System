@@ -1,0 +1,115 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .form-group select {
+            background-color: #fff;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>View Profile</h2>
+        <form action="/update_staff_action" method="post">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="textfield" placeholder="Enter your name" value="{{ obj.name }}">
+            </div>
+
+            <div class="form-group">
+                <label for="place">Place</label>
+                <input type="text" id="place" name="textfield2" placeholder="Enter your place" value="{{ obj.place }}">
+            </div>
+
+            <div class="form-group">
+                <label for="post">Post</label>
+                <input type="text" id="post" name="textfield3" placeholder="Enter your post" value="{{ obj.post }}">
+            </div>
+
+            <div class="form-group">
+                <label for="pin">Pin</label>
+                <input type="text" id="pin" name="textfield5" placeholder="Enter your pin" value="{{ obj.pin }}">
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" name="textfield4" placeholder="Enter your phone number" value="{{ obj.phone }}">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="textfield6" placeholder="Enter your email" value="{{ obj.email }}">
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" name="textfield9" placeholder="Enter your age" value="{{ obj.age }}">
+            </div>
+
+            <div class="form-group">
+                <label for="department">Department</label>
+                <select id="department" name="select">
+                    <option value="">Select your department</option>
+
+                    {% for i in dept %}
+                    <option value="{{ i.id }}" {% if obj.DEPARTMENT_ID.id == i.id %}selected{%endif%}>{{ i.department }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn">Edit Profile</button>
+        </form>
+    </div>
+</body>
+</html>

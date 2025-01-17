@@ -1,0 +1,41 @@
+{% extends 'hod_index.html' %}
+{% block body %}
+
+<form id="form1" name="form1" method="post" action="{% url 'allocated_subjects_search' %}#about">
+  <table class="table table-dark table-hover">
+    <tr>
+      <th colspan="2">DEPARTMENT</th>
+      <td>
+        <select name="department_id">
+          {% for i in dept %}
+          <option value="{{i.id}}">{{ i.department }}</option>
+          {% endfor %}
+        </select>
+        
+      
+      </td>
+    </tr>
+    <tr>
+      <td colspan="3" align="center">
+        <input type="submit" value="search">
+      </td>
+    </tr>
+    <tr>
+      <th>SUBJECTS</th>
+      <th>STAFF</th>
+      <td></td>
+     
+    </tr>
+      {% for i in obj %}
+    <tr>
+      <td>&nbsp;{{ i.SUBJECT.Subject }}</td>
+      <td>&nbsp;{{ i.STAFF.name }}</td>
+      <td>
+	  <a href="/remove_allocation/{{i.id}}">REMOVE</a></td>
+    </tr>
+      {% endfor %}
+  </table>
+</form>
+{#</body>#}
+{#</html>#}
+{% endblock %}
