@@ -64,7 +64,7 @@ class LeaveTable(models.Model):
     Time=models.CharField(max_length=250,null=True,blank=True)
     STUDENT=models.ForeignKey(Student,on_delete=models.CASCADE,null=True,blank=True)
 
-class Attendance(models.Model):
+class AttendanceTable(models.Model):
     SLOT_CHOICES = [
         ('slot_9_10', 'slot_9_10'),
         ('slot_10_11', 'slot_10_11'),

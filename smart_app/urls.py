@@ -95,6 +95,8 @@ urlpatterns = [
     path("view_timtable_action", views.view_timtable_action, name="view_timtable_action"),
     path('view_attendace_staff', views.view_attendace_staff, name="view_attendace_staff"),
     path("view_notification_staff", views.view_notification_staff, name="view_notification_staff"),
+    path("select_slot", views.select_slot, name="select_slot"),
+    path("take_attendance", views.take_attendance, name="take_attendance"),
 
 
 
@@ -109,7 +111,8 @@ urlpatterns = [
 
     path('StudentReg', views.StudentReg.as_view(), name="StudentReg"),
     path('login_code', views.LoginPageApi.as_view(), name="login_code"),
-    path('ViewTimeTable', views.ViewTimeTable.as_view(), name="ViewTimeTable"),
+    path('ViewTimeTable/<int:lid>', views.ViewTimeTable.as_view(), name="ViewTimeTable"),
     path('ViewAttendanceApi/<int:lid>', views.ViewAttendanceApi.as_view(), name="ViewAttendanceApi"),
+    path('ViewProfileApi/<int:lid>', views.ViewProfileApi.as_view(), name="ViewProfileApi"),
 ]
 

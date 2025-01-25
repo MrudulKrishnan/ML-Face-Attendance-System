@@ -24,13 +24,18 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 
 class TimetableSerializer(serializers.ModelSerializer):
-    subject = serializers.CharField(source='SUBJECT.Subject')
+    subject1 = serializers.CharField(source='slot_9_10.Subject')
+    subject2 = serializers.CharField(source='slot_10_11.Subject')
+    subject3 = serializers.CharField(source='slot_11_12.Subject')
+    subject4 = serializers.CharField(source='slot_1_2.Subject')
+    subject5 = serializers.CharField(source='slot_2_3.Subject')
+    subject6 = serializers.CharField(source='slot_3_4.Subject')
     class Meta:
-        model = Timetable
-        fields = ['Day', 'Period', 'subject']  # Include relevant fields like `id` and `name`
+        model = Timetable1
+        fields = ['day', 'subject1','subject2', 'subject3', 'subject4', 'subject5', 'subject6']  # Include relevant fields like `id` and `name`
 
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Attendance
-        fields = ['Date', 'Attendance']  # Include relevant fields like `id` and `name`
+        model = AttendanceTable
+        fields = ['Date', 'Attendance', 'Period']  # Include relevant fields like `id` and `name`
 

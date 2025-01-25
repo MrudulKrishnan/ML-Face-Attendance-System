@@ -1,15 +1,19 @@
 from datetime import datetime, timedelta
-
+import time
+import cv2
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 import json
 from django.http import JsonResponse
 from smart_app.models import *
 from smart_app.serializer import *
 from django.shortcuts import render, get_object_or_404
+import os
+from django.conf import settings
+import face_recognition
 
 
 # Create your views here.
@@ -217,44 +221,76 @@ def add_student(request):
 
 @login_required(login_url='/')
 def add_student_action(request):
-    admission = request.POST['admission']
-    firstname = request.POST['textfield']
-    lastname = request.POST['textfield10']
-    place = request.POST['place']
-    post = request.POST['textfield3']
-    pin = request.POST['textfield2']
-    phone = request.POST['textfield4']
-    email = request.POST['textfield5']
-    photo = request.FILES['photo']
-    fss = FileSystemStorage()
-    photo_file = fss.save(photo.name, photo)
-    ClassNO = request.POST['select']
-    username = request.POST['textfield6']
-    password = request.POST['textfield7']
+    if request.method == 'POST':
+        # Extract data from the request
+        admission = request.POST['admission']
+        firstname = request.POST['textfield']
+        lastname = request.POST['textfield10']
+        place = request.POST['place']
+        post = request.POST['textfield3']
+        pin = request.POST['textfield2']
+        phone = request.POST['textfield4']
+        email = request.POST['textfield5']
+        photo = request.FILES['photo']
+        ClassNO = request.POST['select']
+        username = request.POST['textfield6']
+        password = request.POST['textfield7']
 
-    login_obj = Login()
-    login_obj.Username = username
-    login_obj.Password = password
-    login_obj.Type = 'student'
-    login_obj.save()
+        # Save login record
+        login_obj = Login(
+            Username=username,
+            Password=password,
+            Type='student'
+        )
+        login_obj.save()  # Save to the database
 
-    student_obj = Student()
-    student_obj.AdmissionNo = admission
-    student_obj.first_name = firstname
-    student_obj.last_name = lastname
-    student_obj.place = place
-    student_obj.post = post
-    student_obj.pin = pin
-    student_obj.phone = phone
-    student_obj.email = email
-    student_obj.photo = photo_file
-    student_obj.LOGIN = login_obj
-    student_obj.CLASS = ClassTable.objects.get(id=ClassNO)
-    student_obj.save()
+        # Save the photo using FileSystemStorage
+        fss = FileSystemStorage()
+        photo_file_name = fss.save(photo.name, photo)  # Save photo
+        photo_file_path = fss.url(photo_file_name)  # Get URL of the saved file
 
-    return HttpResponse('''<script>alert("Added ");window.location="/manage_student#about"</script>''')
+        # Save student record
+        student_obj = Student(
+            AdmissionNo=admission,
+            first_name=firstname,
+            last_name=lastname,
+            place=place,
+            post=post,
+            pin=pin,
+            phone=phone,
+            email=email,
+            photo=photo_file_name,  # Save the file path in the model
+            LOGIN=login_obj,  # Link with the saved login object
+            CLASS=ClassTable.objects.get(id=ClassNO)  # Get the class object
+        )
+        student_obj.save()  # Save the student object to the database
 
+        # Create a unique directory for the student's images
+        student_dir = os.path.join(settings.MEDIA_ROOT, 'known_images', firstname)
+        os.makedirs(student_dir, exist_ok=True)
 
+        # Save the uploaded image to the unique directory
+        uploaded_image_path = os.path.join(student_dir, photo.name)
+        with open(uploaded_image_path, 'wb+') as destination:
+            for chunk in photo.chunks():
+                destination.write(chunk)
+
+        # Update the `photo` field to point to the new path
+        student_obj.photo.name = os.path.join('known_images', firstname, photo.name)
+        student_obj.save()  # Save the updated student object
+
+        # Update the `known_faces.txt` file
+        known_faces_path = os.path.join(settings.MEDIA_ROOT, 'known_faces.txt')
+        with open(known_faces_path, 'a') as f:
+            f.write(f"{student_obj.id}\n")
+
+        return HttpResponse(
+            '''<script>alert("Student added successfully");window.location="/manage_student#about"</script>'''
+        )
+    else:
+        return HttpResponse(
+            '''<script>alert("Invalid request method");window.location="/manage_student#about"</script>'''
+        )
 @login_required(login_url='/')
 def update_student(request, student_id):
     request.session['student_id'] = student_id
@@ -287,6 +323,7 @@ def update_student_action(request):
     student_obj.email = email
     student_obj.DEPARTMENT = Department.objects.get(id=dept)
     student_obj.save()
+    
     return HttpResponse('''<script>alert("Updated ");window.location="/manage_student#about"</script>''')
 
 
@@ -524,7 +561,7 @@ def hod_view_attendace(request):
         # Fetch attendance for the selected date and class
         attendance_data = []
         for student in students:
-            student_attendance = Attendance.objects.filter(
+            student_attendance = AttendanceTable.objects.filter(
                 STUDENT_ID=student, Date=date
             ).order_by('Period')
             attendance_record = {
@@ -618,7 +655,7 @@ def select_class_attend(request):
 def view_attendance_college_action(request):
     student_name = request.POST['student']
     department = request.POST['department']
-    attendance_obj = Attendance.objects.filter(STUDENT_ID__first_name__startswith=student_name, STUDENT_ID__DEPARTMENT=department)
+    attendance_obj = AttendanceTable.objects.filter(STUDENT_ID__first_name__startswith=student_name, STUDENT_ID__DEPARTMENT=department)
     return render(request, "college/view_attendance_college.html", {'attendance_obj': attendance_obj})
 
 
@@ -705,7 +742,7 @@ def view_attendace_staff(request):
         # Fetch attendance for the selected date and class
         attendance_data = []
         for student in students:
-            student_attendance = Attendance.objects.filter(
+            student_attendance = AttendanceTable.objects.filter(
                 STUDENT_ID=student, Date=date
             ).order_by('Period')
             attendance_record = {
@@ -780,6 +817,103 @@ def view_timetable(request):
     # Render the timetable in a template
     return render(request, 'staff/timetable.html', {'timetable_entries': timetable_entries})
 
+def select_slot(request):
+    return render(request, 'staff/view_slots.html')
+
+def take_attendance(request):
+    slot = request.POST['slot']
+    print("---------------->Camera started")
+    name_list=[]
+                
+    # Path to the known images folder and the text file with names
+    known_images_path = "E:\\WORK\\PROGRAM FILES\\TRYCODE\Projects\\Smart_Attendance\\Smart_Attendance\\media\\known_images"
+    names_file = "E:\\WORK\\PROGRAM FILES\\TRYCODE\\Projects\\Smart_Attendance\\Smart_Attendance\\media\\known_faces.txt"
+
+    # Function to load names from the text file
+    def load_names(names_file):
+        with open(names_file, "r") as f:
+            names = [line.strip() for line in f.readlines()]
+        return names
+
+    # Load known face names from the text file
+    person_names = load_names(names_file)
+    known_face_encodings = []
+    known_face_names = []
+
+    # Loop through each person folder inside known_images
+    for i, person_folder in enumerate(os.listdir(known_images_path)):
+        person_folder_path = os.path.join(known_images_path, person_folder)
+        person_name = person_names[i]  # Fetch name corresponding to the person folder
+        
+        # Loop through each image in the person's folder
+        for image_file in os.listdir(person_folder_path):
+            image_path = os.path.join(person_folder_path, image_file)
+            image = face_recognition.load_image_file(image_path)
+            
+            # Encode the face and store it with the person's name
+            face_encoding = face_recognition.face_encodings(image)
+            if face_encoding:
+                known_face_encodings.append(face_encoding[0])
+                known_face_names.append(person_name)
+                print(f"Encoded {image_file} for {person_name}")
+            else:
+                print(f"No face found in {image_file}, skipping")
+
+    # Final check for any mismatches
+    print(f"Number of encodings: {len(known_face_encodings)}, Number of names: {len(known_face_names)}")
+
+    # Start capturing video from the webcam
+    cap = cv2.VideoCapture(0)
+    check_flag=0
+    while check_flag==0:
+        start_time = time.time()
+        while time.time() - start_time < 5:
+            ret, frame = cap.read()
+            cv2.imshow("Real-time Face Recognition", frame)
+            cv2.waitKey(1)
+        cv2.imwrite("imageeee.jpg",frame)
+        cap.release()
+        cv2.destroyAllWindows()
+
+        frame = cv2.imread("imageeee.jpg")
+
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Get face encodings for each face in the frame
+        face_encodings = face_recognition.face_encodings(rgb_frame)
+
+        for face_encoding in face_encodings:
+            name = "Unknown"
+
+            # Compare the face encodings with known faces
+            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+            if True in matches:
+                match_index = matches.index(True)
+                if match_index < len(known_face_names):
+                    name = int(known_face_names[match_index])
+                    print(type(name))
+                    name_list.append(name)
+                    print(name_list)
+                    check_flag=1
+                else:
+                    print(f"Error: match_index {match_index} out of range")
+                    
+        if name_list:
+             
+            current_time = datetime.now() 
+            print("----------->", current_time)
+            
+            for i in name_list:
+                obj = AttendanceTable()
+                obj.Date=current_time
+                obj.Attendance="Present"
+                obj.Period = slot
+                obj.STUDENT_ID=Student.objects.get(id=i)
+                obj.save()
+            return HttpResponse('''<script>alert("Done");window.location="/staff_home#about"</script>''')
+        else:
+            return HttpResponse('''<script>alert("No Faces");window.location="/staff_home#about"</script>''')
+    
 
     #////////////////////////////////WEBSERVICE/////////////////////////////////
     #/////////////////////////////////STUDENT///////////////////////////////////
@@ -869,8 +1003,9 @@ class StudentReg(APIView):
 
 
 class ViewTimeTable(APIView):
-    def get(self, request):
-        obj = Timetable.objects.all()
+    def get(self, request,lid):
+        obj = Student.objects.get(LOGIN_id=lid)
+        obj = Timetable1.objects.filter(CLASS_id=obj.CLASS.id)
         serializer = TimetableSerializer(obj, many = True)
         print("time----------------> ", serializer)
         return Response(serializer.data)
@@ -878,10 +1013,15 @@ class ViewTimeTable(APIView):
 
 class ViewAttendanceApi(APIView):
     def get(self, request, lid):
-        obj = Attendance.objects.filter(STUDENT_ID__LOGIN_id=lid)
+        obj = AttendanceTable.objects.filter(STUDENT_ID__LOGIN_id=lid)
         serializer = AttendanceSerializer(obj, many = True)
         print("time----------------> ", serializer)
         return Response(serializer.data)
 
-
+class ViewProfileApi(APIView):
+    def get(self, request, lid):
+        obj = Student.objects.filter(LOGIN_id=lid)
+        serializer = UserSerializer(obj, many = True)
+        print("time----------------> ", serializer)
+        return Response(serializer.data)
 
